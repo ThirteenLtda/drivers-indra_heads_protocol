@@ -60,12 +60,12 @@ double details::decode_angle(uint16_t angle)
 
 uint8_t details::encode_angular_velocity(double velocity)
 {
-    return std::round(velocity * 10);
+    return std::round(velocity * 1800 / M_PI);
 }
 
 double details::decode_angular_velocity(uint8_t velocity)
 {
-    return static_cast<double>(velocity) / 10;
+    return static_cast<double>(velocity) * M_PI / 1800;
 }
 
 uint32_t details::encode_latlon(double angle)
@@ -89,25 +89,25 @@ double details::decode_altitude(uint16_t altitude)
     throw std::runtime_error("do not know how to do that yet");
 }
 
-Rates requests::decodeRate(packets::StatusRefreshRate const& status)
+Rates requests::decode(packets::StatusRefreshRate const& status)
 {
-    return static_cast<Rates>(status.rate);
+    return static_cast<Rates>(ntohs(status.rate));
 }
-Eigen::Vector3d requests::decodeAngles(packets::Angles const& angles)
+Eigen::Vector3d requests::decode(packets::Angles const& angles)
 {
     return Eigen::Vector3d(
             details::decode_angle(angles.roll),
             details::decode_angle(angles.pitch),
             details::decode_angle(angles.yaw));
 }
-Eigen::Vector3d requests::decodeAngularVelocities(packets::AngularVelocities const& velocities)
+Eigen::Vector3d requests::decode(packets::AngularVelocities const& velocities)
 {
     return Eigen::Vector3d(
             details::decode_angular_velocity(velocities.roll),
             details::decode_angular_velocity(velocities.pitch),
             details::decode_angular_velocity(velocities.yaw));
 }
-GeoTarget requests::decodeStabilizationTarget(packets::StabilizationTarget const& target)
+GeoTarget requests::decode(packets::StabilizationTarget const& target)
 {
     return GeoTarget(
             (target.latitude_sign == 1 ? 1 : -1) * details::decode_latlon(target.latitude),
@@ -115,8 +115,8 @@ GeoTarget requests::decodeStabilizationTarget(packets::StabilizationTarget const
             details::decode_altitude(target.altitude));
 }
 
-ResponseStatus reply::parse(packets::Response& message)
+ResponseStatus reply::parse(packets::Response const& message)
 {
-    return static_cast<ResponseStatus>(ntohs(message.status));
+    return static_cast<ResponseStatus>(message.status);
 }
 

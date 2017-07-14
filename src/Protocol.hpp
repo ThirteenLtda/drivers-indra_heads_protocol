@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <Eigen/Core>
 #include <arpa/inet.h>
+#include <base/Float.hpp>
 
 namespace indra_heads_protocol
 {
@@ -25,7 +26,8 @@ namespace indra_heads_protocol
 
     enum MessageTypes {
         MSG_REQUEST = 0,
-        MSG_RESPONSE = 1
+        MSG_RESPONSE = 1,
+        MSG_LAST_TYPE = 1
     };
 
     enum ResponseStatus {
@@ -46,6 +48,10 @@ namespace indra_heads_protocol
         double longitude;
         double altitude;
 
+        GeoTarget()
+            : latitude(base::unknown<double>())
+            , longitude(base::unknown<double>())
+            , altitude(base::unknown<double>()) {}
         GeoTarget(double latitude, double longitude, double altitude)
             : latitude(latitude)
             , longitude(longitude)
@@ -241,10 +247,10 @@ namespace indra_heads_protocol
             return buffer;
         }
 
-        Rates decodeRate(packets::StatusRefreshRate const& angle);
-        Eigen::Vector3d decodeAngles(packets::Angles const& angle);
-        Eigen::Vector3d decodeAngularVelocities(packets::AngularVelocities const& angle);
-        GeoTarget decodeStabilizationTarget(packets::StabilizationTarget const& angle);
+        Rates decode(packets::StatusRefreshRate const& angle);
+        Eigen::Vector3d decode(packets::Angles const& angle);
+        Eigen::Vector3d decode(packets::AngularVelocities const& angle);
+        GeoTarget decode(packets::StabilizationTarget const& angle);
     }
 
     /** Representation of the reply messages
@@ -254,7 +260,7 @@ namespace indra_heads_protocol
         {
             return packets::Response(command_id, status);
         }
-        ResponseStatus parse(packets::Response& message);
+        ResponseStatus parse(packets::Response const& message);
     }
 }
 

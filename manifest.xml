@@ -15,6 +15,7 @@
   <depend package="dummy-dependency-n" />
   -->
   <depend package="base/types" />
+  <depend package="drivers/iodrivers_base" />
   <test_depend package="libgtest-dev" />
   <test_depend package="google-mock" />
 </package>

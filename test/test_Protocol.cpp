@@ -54,7 +54,7 @@ TEST(Protocol, AnglesGeo) {
 
 TEST(Protocol, AngularVelocities) {
     ASSERT_THAT(requests::packetize(requests::AngularVelocities(0.1, 0.2, 0.3)),
-            ElementsAre(0x06, 0x00, 0x01, 0x02, 0x00, 0x03, 0x5B, 0xE0));
+            ElementsAre(0x06, 0x00, 0x39, 0x73, 0x00, 0xAC, 0x5C, 0xFD));
 }
 
 TEST(Protocol, EnableStabilization) {

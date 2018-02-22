@@ -21,7 +21,7 @@ namespace indra_heads_protocol
         ID_LAST = 8
     };
 
-    typedef std::int16_t crc_t;
+    typedef std::int8_t crc_t;
     static const int MIN_PACKET_SIZE = 2 + sizeof(crc_t);
 
     enum MessageTypes {
@@ -59,17 +59,22 @@ namespace indra_heads_protocol
     };
 
     namespace details {
-        crc_t    compute_crc(uint8_t const* buffer, uint32_t size);
+        crc_t compute_crc(uint8_t const* buffer, uint32_t size);
+        void  encode_crc(uint8_t* encoded, crc_t crc);
 
-        uint16_t encode_angle(double angle);
-        uint8_t  encode_angular_velocity(double velocity);
-        uint32_t encode_latlon(double angle);
-        uint32_t encode_altitude(double altitude);
+        // Encode an angle (2 bytes)
+        void encode_angle(uint8_t* encoded, double angle);
+        // Encode an angular veloticy (2 bytes)
+        void encode_angular_velocity(uint8_t* encoded, double velocity);
+        // Encode either a latitude or a longitude (5 bytes)
+        void encode_latlon(uint8_t* encoded, double angle);
+        // Encode an altitude (3 bytes)
+        void encode_altitude(uint8_t* encoded, double altitude);
 
-        double decode_angle(uint16_t angle);
-        double decode_angular_velocity(uint8_t velocity);
-        double decode_latlon(uint32_t angle);
-        double decode_altitude(uint16_t altitude);
+        double decode_angle(uint8_t const* encoded);
+        double decode_angular_velocity(uint8_t const* encoded);
+        double decode_latlon(uint8_t const* encoded);
+        double decode_altitude(uint8_t const* encoded);
     }
 
     namespace packets {
@@ -100,44 +105,44 @@ namespace indra_heads_protocol
         {
             uint8_t command_id;
             uint8_t message_type = MSG_REQUEST;
-            uint16_t yaw;
-            uint16_t roll;
-            uint16_t pitch;
+            uint8_t yaw[2];
+            uint8_t roll[2];
+            uint8_t pitch[2];
 
-            Angles(CommandIDs command, float yaw, float pitch, float roll)
+            Angles(CommandIDs command, double yaw, double pitch, double roll)
                 : command_id(command)
-                , yaw(details::encode_angle(yaw))
-                , roll(details::encode_angle(roll))
-                , pitch(details::encode_angle(pitch)) {}
+            {
+                details::encode_angle(this->yaw, yaw);
+                details::encode_angle(this->roll, roll);
+                details::encode_angle(this->pitch, pitch);
+            }
         } __attribute__((packed));
 
         struct AngularVelocities
         {
             uint8_t command_id = ID_ANGULAR_VELOCITIES;
             uint8_t message_type = MSG_REQUEST;
-            uint8_t yaw;
-            uint8_t pitch;
-            uint8_t padding = 0;
-            uint8_t roll;
+            uint8_t yaw[2];
+            uint8_t pitch[2];
+            uint8_t roll[2];
 
-            AngularVelocities(float yaw, float pitch, float roll)
-                : yaw(details::encode_angular_velocity(yaw))
-                , pitch(details::encode_angular_velocity(pitch))
-                , roll(details::encode_angular_velocity(roll)) {}
+            AngularVelocities(double yaw, double pitch, double roll)
+            {
+                details::encode_angular_velocity(this->yaw, yaw);
+                details::encode_angular_velocity(this->pitch, pitch);
+                details::encode_angular_velocity(this->roll, roll);
+            }
         } __attribute__((packed));
 
         struct EnableStabilization
         {
             uint8_t command_id = ID_ENABLE_STABILIZATION;
             uint8_t message_type = MSG_REQUEST;
-            uint8_t yaw;
-            uint8_t pitch;
-            uint8_t padding = 0;
+            uint8_t yaw_and_pitch;
             uint8_t roll;
 
-            EnableStabilization(bool yaw, bool pitch, bool roll)
-                : yaw(yaw ? 1 : 0)
-                , pitch(pitch ? 1 : 0)
+            EnableStabilization(bool yaw_and_pitch, bool roll)
+                : yaw_and_pitch(yaw_and_pitch ? 1 : 0)
                 , roll(roll ? 1 : 0) {}
         } __attribute__((packed));
 
@@ -145,32 +150,26 @@ namespace indra_heads_protocol
         {
             uint8_t command_id = ID_STABILIZATION_TARGET;
             uint8_t message_type = MSG_REQUEST;
-            uint8_t  latitude_sign;
-            uint8_t  padding0 = 0;
-            uint32_t latitude;
-            uint8_t  longitude_sign;
-            uint8_t  padding1 = 0;
-            uint32_t longitude;
-            uint16_t altitude;
+            uint8_t latitude[5];
+            uint8_t longitude[5];
+            uint8_t altitude[3];
 
-            StabilizationTarget(float latitude, float longitude, float altitude)
-                : latitude_sign(latitude > 0 ? 1 : 0)
-                , latitude(details::encode_latlon(latitude))
-                , longitude_sign(longitude > 0 ? 1 : 0)
-                , longitude(details::encode_latlon(longitude))
-                , altitude(details::encode_altitude(altitude)) {}
+            StabilizationTarget(double latitude, double longitude, double altitude)
+            {
+                details::encode_latlon(this->latitude, latitude);
+                details::encode_latlon(this->longitude, longitude);
+                details::encode_altitude(this->altitude, altitude);
+            }
         } __attribute__((packed));
 
         struct Response
         {
             uint8_t command_id;
             uint8_t message_type = MSG_RESPONSE;
-            uint8_t padding;
             uint8_t status;
 
             Response(CommandIDs command_id, ResponseStatus status)
                 : command_id(command_id)
-                , padding(0)
                 , status(status) {}
         } __attribute__((packed));
     }
@@ -209,42 +208,45 @@ namespace indra_heads_protocol
             return packets::StatusRefreshRate(ID_STATUS_REFRESH_RATE_IMU, rate);
         }
 
-        inline packets::Angles AnglesRelative(float yaw, float pitch, float roll)
+        inline packets::Angles AnglesRelative(double yaw, double pitch, double roll)
         {
             return packets::Angles(ID_ANGLES_RELATIVE, yaw, pitch, roll);
         }
 
-        inline packets::Angles AnglesGeo(float yaw, float pitch, float roll)
+        inline packets::Angles AnglesGeo(double yaw, double pitch, double roll)
         {
             return packets::Angles(ID_ANGLES_GEO, yaw, pitch, roll);
         }
 
-        inline packets::AngularVelocities AngularVelocities(float yaw, float pitch, float roll)
+        inline packets::AngularVelocities AngularVelocities(
+            double yaw, double pitch, double roll)
         {
             return packets::AngularVelocities(yaw, pitch, roll);
         }
 
-        inline packets::EnableStabilization EnableStabilization(bool yaw, bool pitch, bool roll)
+        inline packets::EnableStabilization EnableStabilization(
+            bool yaw_and_pitch, bool roll)
         {
-            return packets::EnableStabilization(yaw, pitch, roll);
+            return packets::EnableStabilization(yaw_and_pitch, roll);
         }
 
-        inline packets::StabilizationTarget StabilizationTarget(float latitude, float longitude, float altitude)
+        inline packets::StabilizationTarget StabilizationTarget(
+            double latitude, double longitude, double altitude)
         {
             return packets::StabilizationTarget(latitude, longitude, altitude);
         }
 
         template<typename T> void packetize(uint8_t* buffer, T const& packet) {
             std::memcpy(buffer, &packet, sizeof(packet));
-            *reinterpret_cast<crc_t*>(buffer + sizeof(packet)) =
-                details::compute_crc(buffer, sizeof(packet));
+            crc_t crc = details::compute_crc(buffer, sizeof(packet));
+            details::encode_crc(buffer + sizeof(packet), crc);
         }
 
         template<typename T> std::vector<uint8_t> packetize(T const& packet) {
             std::vector<uint8_t> buffer;
             buffer.resize(sizeof(packet) + sizeof(crc_t));
             packetize(buffer.data(), packet);
-            return buffer;
+            return std::move(buffer);
         }
 
         Rates decode(packets::StatusRefreshRate const& angle);

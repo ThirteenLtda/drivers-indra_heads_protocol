@@ -3,11 +3,13 @@
 
 #include <iodrivers_base/Driver.hpp>
 #include <indra_heads_protocol/RequestedConfiguration.hpp>
+#include <indra_heads_protocol/Response.hpp>
 
 namespace indra_heads_protocol
 {
     class Driver : public iodrivers_base::Driver
     {
+        std::vector<uint8_t> mWriteBuffer;
         std::vector<uint8_t> mReadBuffer;
         RequestedConfiguration mRequestedConfiguration;
 
@@ -22,6 +24,18 @@ namespace indra_heads_protocol
 
         Driver();
 
+        /** Write a request
+         * 
+         * Build the request packet itself using the functions
+         * in indra_heads_protocol::requests
+         */
+        template<typename T>
+        void sendRequest(T const& packet)
+        {
+            mWriteBuffer = requests::packetize(packet);
+            writePacket(mWriteBuffer.data(), mWriteBuffer.size());
+        }
+
         /** Read a command and return which command was received
          *
          * This internally updates the requested configuration that can be
@@ -29,9 +43,13 @@ namespace indra_heads_protocol
          */
         CommandIDs readRequest();
 
+        /** Send a response packet
+         */
+        void writeResponse(Response response);
+
         /** Read a response packet and return the status
          */
-        std::pair<CommandIDs, ResponseStatus> readResponse();
+        Response readResponse();
 
         /** Returns the current requested configuration
          */

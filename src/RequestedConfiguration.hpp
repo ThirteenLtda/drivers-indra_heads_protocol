@@ -2,6 +2,8 @@
 #define INDRA_HEADS_REQUESTED_CONFIGURATION_HPP
 
 #include <indra_heads_protocol/Protocol.hpp>
+#include <base/Eigen.hpp>
+#include <base/Time.hpp>
 
 namespace indra_heads_protocol
 {
@@ -22,6 +24,9 @@ namespace indra_heads_protocol
         /** Time of last update */
         base::Time time;
 
+        /** The ID of the command that was received */
+        CommandIDs command_id;
+
         /** The refresh rate of the PT status message */
         Rates rate_status_pt;
 
@@ -36,7 +41,7 @@ namespace indra_heads_protocol
         /** Expected Yaw/Pitch/Roll pose or velocity when in angular pose or
          * velocity control modes
          */
-        Eigen::Vector3d rpy;
+        base::Vector3d rpy;
 
         /** Expected lat/lon/altitude when in stabilized mode
          */
@@ -45,7 +50,8 @@ namespace indra_heads_protocol
         RequestedConfiguration()
             : rate_status_pt(RATE_DISABLED)
             , rate_status_imu(RATE_DISABLED)
-            , control_mode(STOP) {}
+            , control_mode(STOP)
+            , rpy(base::unset<base::Vector3d>()) {}
     };
 }
 

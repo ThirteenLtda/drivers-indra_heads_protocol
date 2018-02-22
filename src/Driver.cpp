@@ -1,5 +1,6 @@
 #include <indra_heads_protocol/Driver.hpp>
 #include <indra_heads_protocol/Protocol.hpp>
+#include <indra_heads_protocol/Response.hpp>
 #include <iostream>
 
 using namespace std;
@@ -13,6 +14,7 @@ Driver::Driver()
     // from the fact that MAX_PACKET_SIZE in iodrivers_base::Driver is actually
     // the size of the internal buffer.
     mReadBuffer.resize(MAX_PACKET_SIZE);
+    mWriteBuffer.resize(MAX_PACKET_SIZE);
 }
 
 int Driver::extractPacket(uint8_t const* buffer, size_t buffer_size) const
@@ -51,35 +53,43 @@ CommandIDs Driver::readRequest()
     switch(mReadBuffer[0])
     {
         case ID_DEPLOY:
+            mRequestedConfiguration.command_id = ID_DEPLOY;
             mRequestedConfiguration.control_mode = RequestedConfiguration::STOP;
             return ID_DEPLOY;
         case ID_BITE:
+            mRequestedConfiguration.command_id = ID_BITE;
             mRequestedConfiguration.control_mode = RequestedConfiguration::SELF_TEST;
             return ID_BITE;
         case ID_STATUS_REFRESH_RATE_PT:
+            mRequestedConfiguration.command_id = ID_STATUS_REFRESH_RATE_PT;
             mRequestedConfiguration.rate_status_pt =
                 requests::decode(reinterpret_cast<packets::StatusRefreshRate&>(mReadBuffer[0]));
             return ID_STATUS_REFRESH_RATE_PT;
         case ID_STATUS_REFRESH_RATE_IMU:
+            mRequestedConfiguration.command_id = ID_STATUS_REFRESH_RATE_IMU;
             mRequestedConfiguration.rate_status_imu =
                 requests::decode(reinterpret_cast<packets::StatusRefreshRate&>(mReadBuffer[0]));
             return ID_STATUS_REFRESH_RATE_IMU;
         case ID_ANGLES_RELATIVE:
+            mRequestedConfiguration.command_id = ID_ANGLES_RELATIVE;
             mRequestedConfiguration.control_mode = RequestedConfiguration::ANGLES_RELATIVE;
             mRequestedConfiguration.rpy =
                 requests::decode(reinterpret_cast<packets::Angles&>(mReadBuffer[0]));
             return ID_ANGLES_RELATIVE;
         case ID_ANGLES_GEO:
+            mRequestedConfiguration.command_id = ID_ANGLES_GEO;
             mRequestedConfiguration.control_mode = RequestedConfiguration::ANGLES_GEO;
             mRequestedConfiguration.rpy =
                 requests::decode(reinterpret_cast<packets::Angles&>(mReadBuffer[0]));
             return ID_ANGLES_GEO;
         case ID_ANGULAR_VELOCITIES:
+            mRequestedConfiguration.command_id = ID_ANGULAR_VELOCITIES;
             mRequestedConfiguration.control_mode = RequestedConfiguration::ANGULAR_VELOCITY;
             mRequestedConfiguration.rpy =
                 requests::decode(reinterpret_cast<packets::AngularVelocities&>(mReadBuffer[0]));
             return ID_ANGULAR_VELOCITIES;
         case ID_STABILIZATION_TARGET:
+            mRequestedConfiguration.command_id = ID_STABILIZATION_TARGET;
             mRequestedConfiguration.control_mode = RequestedConfiguration::STABILIZED;
             mRequestedConfiguration.lat_lon_alt =
                 requests::decode(reinterpret_cast<packets::StabilizationTarget&>(mReadBuffer[0]));
@@ -93,15 +103,22 @@ CommandIDs Driver::readRequest()
     // Never reached;
 }
 
-pair<CommandIDs, ResponseStatus> Driver::readResponse()
+void Driver::writeResponse(Response response)
+{
+    auto packet = reply::Response(response.command_id, response.status);
+    sendRequest(packet);
+}
+
+Response Driver::readResponse()
 {
     readPacket(mReadBuffer.data(), MAX_PACKET_SIZE);
     if (mReadBuffer[1] == MSG_REQUEST)
         throw std::runtime_error("expected a response packet but got a request");
 
-    return make_pair(
-            static_cast<CommandIDs>(mReadBuffer[0]),
-            reply::parse(reinterpret_cast<packets::Response const&>(mReadBuffer[0])));
+    return Response {
+        static_cast<CommandIDs>(mReadBuffer[0]),
+        reply::parse(reinterpret_cast<packets::Response const&>(mReadBuffer[0]))
+    };
 }
 
 RequestedConfiguration Driver::getRequestedConfiguration() const

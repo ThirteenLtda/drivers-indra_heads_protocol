@@ -19,7 +19,7 @@ struct DriverTest : public ::testing::Test, public iodrivers_base::Fixture<Drive
         return id;
     }
 
-    std::pair<CommandIDs, ResponseStatus> readResponse()
+    Response readResponse()
     {
         return driver.readResponse();
     }
@@ -174,7 +174,9 @@ TEST_F(DriverTest, it_throws_if_a_response_is_received_while_expecting_a_command
 TEST_F(DriverTest, it_interprets_a_response) {
     uint8_t msg[] = {0x05, 0x01, 0x01, 0xD2};
     pushDataToDriver(msg, msg + sizeof(msg));
-    ASSERT_EQ(std::make_pair(ID_ANGLES_GEO, STATUS_FAILED), readResponse());
+    auto response = readResponse();
+    ASSERT_EQ(ID_ANGLES_GEO, response.command_id);
+    ASSERT_EQ(STATUS_FAILED, response.status);
 }
 
 TEST_F(DriverTest, it_throws_if_a_request_is_received_while_expecting_a_response) {

@@ -49,6 +49,24 @@ ResponseStatus request(Driver& driver, T const& packet)
     }
 }
 
+Rates rate_from_arg(std::string const& arg) {
+    if (arg == "disable") {
+        return RATE_DISABLED;
+    }
+    else if (arg == "10") {
+        return RATE_10HZ;
+    }
+    else if (arg == "20") {
+        return RATE_20HZ;
+    }
+    else if (arg == "50") {
+        return RATE_50HZ;
+    }
+    else {
+        throw std::invalid_argument("unknown data rate " + arg + " known values are disable, 10, 20 and 50");
+    }
+}
+
 int main(int argc, char** argv)
 {
     verify_argc_atleast(2, argc);
@@ -68,6 +86,16 @@ int main(int argc, char** argv)
     else if (cmd == "self-test") {
         verify_argc(3, argc);
         request(driver, requests::BITE());
+    }
+    else if (cmd == "rate-imu") {
+        verify_argc(4, argc);
+        Rates target_rate = rate_from_arg(argv[3]);
+        request(driver, requests::StatusRefreshRateIMU(target_rate));
+    }
+    else if (cmd == "rate-pt") {
+        verify_argc(4, argc);
+        Rates target_rate = rate_from_arg(argv[3]);
+        request(driver, requests::StatusRefreshRatePT(target_rate));
     }
     else if (cmd == "target") {
         verify_argc(6, argc);

@@ -17,18 +17,19 @@ namespace indra_heads_protocol
         ID_ANGLES_GEO      = 5,
         ID_ANGULAR_VELOCITIES = 6,
         ID_ENABLE_STABILIZATION = 7,
-        ID_STABILIZATION_TARGET = 8,
-        ID_LAST = 8
+        ID_STABILIZATION_TARGET = 8
     };
+
+    static const int ID_LAST = ID_STABILIZATION_TARGET;
 
     typedef std::int8_t crc_t;
     static const int MIN_PACKET_SIZE = 2 + sizeof(crc_t);
 
     enum MessageTypes {
         MSG_REQUEST = 0,
-        MSG_RESPONSE = 1,
-        MSG_LAST_TYPE = 1
+        MSG_RESPONSE = 1
     };
+    static const int MSG_LAST_TYPE = 1;
 
     enum ResponseStatus {
         STATUS_OK = 0,

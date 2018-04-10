@@ -13,7 +13,7 @@ int packets::getPacketSize(CommandIDs command_id, MessageTypes message_type)
 
     switch(command_id)
     {
-        case ID_DEPLOY:
+        case ID_STOP:
             return sizeof(packets::SimpleMessage);
         case ID_BITE:
             return sizeof(packets::SimpleMessage);
@@ -119,7 +119,7 @@ double details::decode_altitude(uint8_t const* encoded)
 
 Rates requests::decode(packets::StatusRefreshRate const& status)
 {
-    return static_cast<Rates>(ntohs(status.rate));
+    return static_cast<Rates>(status.rate);
 }
 Eigen::Vector3d requests::decode(packets::Angles const& angles)
 {
@@ -147,4 +147,3 @@ ResponseStatus reply::parse(packets::Response const& message)
 {
     return static_cast<ResponseStatus>(message.status);
 }
-

@@ -7,7 +7,7 @@ using namespace std;
 using namespace indra_heads_protocol;
 
 Driver::Driver()
-    : iodrivers_base::Driver(indra_heads_protocol::MAX_PACKET_SIZE * 10) 
+    : iodrivers_base::Driver(indra_heads_protocol::MAX_PACKET_SIZE * 10)
 {
     // NOTE: MAX_PACKET_SIZE here is this->MAX_PACKET_SIZE which is initialized
     // using the value passed to the constructor above. The confusion here stems
@@ -52,10 +52,10 @@ CommandIDs Driver::readRequest()
 
     switch(mReadBuffer[0])
     {
-        case ID_DEPLOY:
-            mRequestedConfiguration.command_id = ID_DEPLOY;
+        case ID_STOP:
+            mRequestedConfiguration.command_id = ID_STOP;
             mRequestedConfiguration.control_mode = RequestedConfiguration::STOP;
-            return ID_DEPLOY;
+            return ID_STOP;
         case ID_BITE:
             mRequestedConfiguration.command_id = ID_BITE;
             mRequestedConfiguration.control_mode = RequestedConfiguration::SELF_TEST;

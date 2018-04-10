@@ -70,9 +70,9 @@ TEST_F(DriverTest, it_waits_for_the_packet_to_match_the_expected_command_length)
 }
 
 TEST_F(DriverTest, it_returns_the_packet_if_it_has_the_expected_length_and_CRC) {
-    uint8_t msg[] = { 0x02, 0x00, 0x00, 0x02, 0x22 };
-    pushDataToDriver(msg, msg + 6);
-    ASSERT_EQ( 5, readPacket().size() );
+    uint8_t msg[] = { 0x02, 0x00, 0x02, 0xD8 };
+    pushDataToDriver(msg, msg + 5);
+    ASSERT_EQ( 4, readPacket().size() );
 }
 
 TEST_F(DriverTest, it_rejects_an_invalid_request_CRC) {
@@ -95,10 +95,10 @@ TEST_F(DriverTest, it_rejects_an_invalid_response_CRC) {
     ASSERT_EQ(3, getQueuedBytes());
 }
 
-TEST_F(DriverTest, it_interprets_a_DEPLOY_command) {
+TEST_F(DriverTest, it_interprets_a_STOP_command) {
     uint8_t msg[] = {0x00, 0x00, 0x00};
     pushDataToDriver(msg, msg + sizeof(msg));
-    ASSERT_EQ(ID_DEPLOY, readRequest());
+    ASSERT_EQ(ID_STOP, readRequest());
     ASSERT_EQ(RequestedConfiguration::STOP, requestedConfiguration.control_mode);
 }
 
@@ -110,7 +110,7 @@ TEST_F(DriverTest, it_interprets_a_BITE_command) {
 }
 
 TEST_F(DriverTest, it_interprets_a_STATUS_REFRESH_RATE_PT_command) {
-    uint8_t msg[] = {0x02, 0x00, 0x00, 0x02, 0x22};
+    uint8_t msg[] = {0x02, 0x00, 0x02, 0xD8};
     pushDataToDriver(msg, msg + sizeof(msg));
     ASSERT_EQ(ID_STATUS_REFRESH_RATE_PT, readRequest());
     ASSERT_EQ(RATE_20HZ, requestedConfiguration.rate_status_pt);
@@ -118,7 +118,7 @@ TEST_F(DriverTest, it_interprets_a_STATUS_REFRESH_RATE_PT_command) {
 }
 
 TEST_F(DriverTest, it_interprets_a_STATUS_REFRESH_RATE_IMU_command) {
-    uint8_t msg[] = {0x03, 0x00, 0x00, 0x01, 0x3D};
+    uint8_t msg[] = {0x03, 0x00, 0x01, 0xBA};
     pushDataToDriver(msg, msg + sizeof(msg));
     ASSERT_EQ(ID_STATUS_REFRESH_RATE_IMU, readRequest());
     ASSERT_EQ(RATE_10HZ, requestedConfiguration.rate_status_imu);
@@ -130,7 +130,7 @@ TEST_F(DriverTest, it_interprets_a_ANGLES_RELATIVE_command) {
     pushDataToDriver(msg, msg + sizeof(msg));
     ASSERT_EQ(ID_ANGLES_RELATIVE, readRequest());
     ASSERT_EQ(RequestedConfiguration::ANGLES_RELATIVE, requestedConfiguration.control_mode);
-    ASSERT_TRUE(Eigen::Vector3d(0.29671, 0.19199, 0.09599).isApprox(requestedConfiguration.rpy, 1e-4));
+    ASSERT_TRUE(Eigen::Vector3d(0.19199, 0.29671, 0.09599).isApprox(requestedConfiguration.rpy, 1e-4));
 }
 
 TEST_F(DriverTest, it_interprets_a_ANGLES_GEO_command) {
@@ -138,7 +138,7 @@ TEST_F(DriverTest, it_interprets_a_ANGLES_GEO_command) {
     pushDataToDriver(msg, msg + sizeof(msg));
     ASSERT_EQ(ID_ANGLES_GEO, readRequest());
     ASSERT_EQ(RequestedConfiguration::ANGLES_GEO, requestedConfiguration.control_mode);
-    ASSERT_TRUE(Eigen::Vector3d(0.29671, 0.19199, 0.09599).isApprox(requestedConfiguration.rpy, 1e-4));
+    ASSERT_TRUE(Eigen::Vector3d(0.19199, 0.29671, 0.09599).isApprox(requestedConfiguration.rpy, 1e-4));
 }
 
 TEST_F(DriverTest, it_interprets_a_ANGULAR_VELOCITIES_command) {
@@ -184,4 +184,3 @@ TEST_F(DriverTest, it_throws_if_a_request_is_received_while_expecting_a_response
     pushDataToDriver(msg, msg + sizeof(msg));
     ASSERT_THROW(readResponse(), std::runtime_error);
 }
-

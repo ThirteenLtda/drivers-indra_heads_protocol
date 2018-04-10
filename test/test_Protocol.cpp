@@ -8,8 +8,8 @@ using ::testing::ElementsAre;
 
 // CRC generation site: http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
 
-TEST(Protocol, DeployMessage) {
-    ASSERT_THAT(requests::packetize(requests::Deploy()),
+TEST(Protocol, StopMessage) {
+    ASSERT_THAT(requests::packetize(requests::Stop()),
             ElementsAre(0x00, 0x00, 0x00));
 }
 
@@ -20,12 +20,12 @@ TEST(Protocol, BITE) {
 
 TEST(Protocol, StatusRefreshRatePT) {
     ASSERT_THAT(requests::packetize(requests::StatusRefreshRatePT(RATE_20HZ)),
-            ElementsAre(0x02, 0x00, 0x00, 0x02, 0x22));
+            ElementsAre(0x02, 0x00, 0x02, 0xD8));
 }
 
 TEST(Protocol, StatusRefreshRateIMU) {
     ASSERT_THAT(requests::packetize(requests::StatusRefreshRateIMU(RATE_10HZ)),
-            ElementsAre(0x03, 0x00, 0x00, 0x01, 0x3D));
+            ElementsAre(0x03, 0x00, 0x01, 0xBA));
 }
 
 TEST(Protocol, encode_angle_normalizes_its_input) {
@@ -45,12 +45,12 @@ TEST(Protocol, encode_angle_handles_upper_limit_properly) {
 }
 
 TEST(Protocol, AnglesRelative) {
-    ASSERT_THAT(requests::packetize(requests::AnglesRelative(0.1, 0.2, 0.3)),
+    ASSERT_THAT(requests::packetize(requests::AnglesRelative(0.1, 0.3, 0.2)),
             ElementsAre(0x04, 0x00, 0x00, 0xB, 0x00, 0x22, 0x00, 0x16, 0x04));
 }
 
 TEST(Protocol, AnglesGeo) {
-    ASSERT_THAT(requests::packetize(requests::AnglesGeo(0.1, 0.2, 0.3)),
+    ASSERT_THAT(requests::packetize(requests::AnglesGeo(0.1, 0.3, 0.2)),
             ElementsAre(0x05, 0x00, 0x00, 0xB, 0x00, 0x22, 0x00, 0x16, 0x17));
 }
 
@@ -60,8 +60,8 @@ TEST(Protocol, AngularVelocities) {
 }
 
 TEST(Protocol, EnableStabilization) {
-    ASSERT_THAT(requests::packetize(requests::EnableStabilization(true, true)),
-            ElementsAre(0x07, 0x00, 0x01, 0x01, 0x70));
+    ASSERT_THAT(requests::packetize(requests::EnableStabilization(true, true, true)),
+            ElementsAre(0x07, 0x00, 0x01, 0x01, 0x01, 0x50));
 }
 
 TEST(Protocol, StabilizationTarget) {
@@ -80,4 +80,3 @@ TEST(Protocol, Response) {
     ASSERT_THAT(requests::packetize(reply::Response(ID_ANGLES_GEO, STATUS_FAILED)),
             ElementsAre(0x05, 0x01, 0x01, 0xD2));
 }
-

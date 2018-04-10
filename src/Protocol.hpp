@@ -9,7 +9,7 @@
 namespace indra_heads_protocol
 {
     enum CommandIDs {
-        ID_DEPLOY = 0,
+        ID_STOP = 0,
         ID_BITE   = 1,
         ID_STATUS_REFRESH_RATE_PT = 2,
         ID_STATUS_REFRESH_RATE_IMU = 3,
@@ -94,11 +94,11 @@ namespace indra_heads_protocol
         {
             uint8_t command_id;
             uint8_t message_type = MSG_REQUEST;
-            uint16_t rate;
+            uint8_t rate;
 
             StatusRefreshRate(CommandIDs command, Rates rate)
                 : command_id(command)
-                , rate(htons(rate)) {}
+                , rate(rate) {}
 
         } __attribute__((packed));
 
@@ -107,15 +107,15 @@ namespace indra_heads_protocol
             uint8_t command_id;
             uint8_t message_type = MSG_REQUEST;
             uint8_t yaw[2];
-            uint8_t roll[2];
             uint8_t pitch[2];
+            uint8_t roll[2];
 
             Angles(CommandIDs command, double yaw, double pitch, double roll)
                 : command_id(command)
             {
                 details::encode_angle(this->yaw, yaw);
-                details::encode_angle(this->roll, roll);
                 details::encode_angle(this->pitch, pitch);
+                details::encode_angle(this->roll, roll);
             }
         } __attribute__((packed));
 
@@ -139,11 +139,13 @@ namespace indra_heads_protocol
         {
             uint8_t command_id = ID_ENABLE_STABILIZATION;
             uint8_t message_type = MSG_REQUEST;
-            uint8_t yaw_and_pitch;
+            uint8_t yaw;
+            uint8_t pitch;
             uint8_t roll;
 
-            EnableStabilization(bool yaw_and_pitch, bool roll)
-                : yaw_and_pitch(yaw_and_pitch ? 1 : 0)
+            EnableStabilization(bool yaw, bool pitch, bool roll)
+                : yaw(yaw ? 1 : 0)
+                , pitch(pitch ? 1 : 0)
                 , roll(roll ? 1 : 0) {}
         } __attribute__((packed));
 
@@ -183,15 +185,15 @@ namespace indra_heads_protocol
      * write that message (the CRC is done by the write)
      *
      * <code>
-     * const auto msg = requests::Deploy();
+     * const auto msg = requests::Stop();
      * driver.writeMessage(msg);
      * </code>
      */
     namespace requests {
 
-        inline packets::SimpleMessage Deploy()
+        inline packets::SimpleMessage Stop()
         {
-            return packets::SimpleMessage(ID_DEPLOY);
+            return packets::SimpleMessage(ID_STOP);
         }
 
         inline packets::SimpleMessage BITE()
@@ -226,9 +228,9 @@ namespace indra_heads_protocol
         }
 
         inline packets::EnableStabilization EnableStabilization(
-            bool yaw_and_pitch, bool roll)
+            bool yaw, bool pitch, bool roll)
         {
-            return packets::EnableStabilization(yaw_and_pitch, roll);
+            return packets::EnableStabilization(yaw, pitch, roll);
         }
 
         inline packets::StabilizationTarget StabilizationTarget(

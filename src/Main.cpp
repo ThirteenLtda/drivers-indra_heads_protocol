@@ -6,7 +6,7 @@ using namespace indra_heads_protocol;
 
 void usage()
 {
-    std::cout 
+    std::cout
         << "usage: indra_heads_protocol_cmd URI CMD [ARGS]\n"
         << "\n"
         << "indra_heads_protocol_cmd URI stop\n"
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 
     if (cmd == "stop") {
         verify_argc(3, argc);
-        request(driver, requests::Deploy());
+        request(driver, requests::Stop());
     }
     else if (cmd == "self-test") {
         verify_argc(3, argc);

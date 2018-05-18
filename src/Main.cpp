@@ -34,6 +34,10 @@ void commands()
         << "\n"
         << "rate-imu RATE\n"
         << "  set the IMU status rate. RATE is 0, 10, 20 and 50 in Hz\n"
+        << "\n"
+        << "reconnect\n"
+        << "re\n"
+        << "  close the current connection and wait for a new client\n"
         << std::endl;
 }
 
@@ -125,46 +129,8 @@ string ask(std::string prompt)
     return cmd;
 }
 
-int main(int argc, char** argv)
+void handleClient(int client_fd)
 {
-    verify_argc_atleast(2, argc);
-
-    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    int enable = 1;
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-    {
-        std::cerr << "setsockopt(SO_REUSEADDR) failed" << std::endl;
-        std::cerr << strerror(errno) << std::endl;
-        return 1;
-    }
-    sockaddr_in server_addr = getipa("0.0.0.0", std::stol(argv[1]));
-    int result = bind(server_fd, (sockaddr*)&server_addr, sizeof(server_addr));
-    if (result < 0)
-    {
-        std::cerr << strerror(errno) << std::endl;
-        return 1;
-    }
-
-    int client_fd = -1;
-    while (client_fd < 0)
-    {
-        std::cout << "Waiting for connection on port " << argv[1] << std::endl;
-        if (listen(server_fd, 1) == -1)
-        {
-            std::cerr << strerror(errno) << std::endl;
-            continue;
-        }
-
-        client_fd = accept(server_fd, nullptr, nullptr);
-        if (client_fd == -1)
-        {
-            std::cerr << strerror(errno) << std::endl;
-            usleep(100000);
-        }
-    }
-
-    close(server_fd);
-
     Driver driver;
     driver.setMainStream(new iodrivers_base::FDStream(client_fd, true));
     driver.setReadTimeout(base::Time::fromSeconds(10));
@@ -186,7 +152,7 @@ int main(int argc, char** argv)
         }
         else if (cmd == "rate-pt") {
             string rate = ask("Rate ?");
-            Rates target_rate = rate_from_arg(argv[3]);
+            Rates target_rate = rate_from_arg(rate);
             displayResponse(request(driver, requests::StatusRefreshRatePT(target_rate)));
         }
         else if (cmd == "target") {
@@ -198,9 +164,56 @@ int main(int argc, char** argv)
             double altitude  = stod(altitude_s);
             displayResponse(request(driver, requests::StabilizationTarget(latitude, longitude, altitude)));
         }
+        else if (cmd == "re" || cmd == "reconnect") {
+            break;
+        }
         else {
             commands();
         }
     }
+}
+
+int main(int argc, char** argv)
+{
+    verify_argc_atleast(2, argc);
+
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int enable = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    {
+        std::cerr << "setsockopt(SO_REUSEADDR) failed" << std::endl;
+        std::cerr << strerror(errno) << std::endl;
+        return 1;
+    }
+    sockaddr_in server_addr = getipa("0.0.0.0", std::stol(argv[1]));
+    int result = bind(server_fd, (sockaddr*)&server_addr, sizeof(server_addr));
+    if (result < 0)
+    {
+        std::cerr << strerror(errno) << std::endl;
+        return 1;
+    }
+
+    while(true)
+    {
+        int client_fd = -1;
+        while (client_fd < 0)
+        {
+            std::cout << "Waiting for connection on port " << argv[1] << std::endl;
+            if (listen(server_fd, 1) == -1)
+            {
+                std::cerr << strerror(errno) << std::endl;
+                continue;
+            }
+
+            client_fd = accept(server_fd, nullptr, nullptr);
+            if (client_fd == -1)
+            {
+                std::cerr << strerror(errno) << std::endl;
+                usleep(100000);
+            }
+        }
+        handleClient(client_fd);
+    }
+
     return 0;
 }

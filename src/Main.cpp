@@ -29,8 +29,11 @@ void commands()
         << "target LATITUDE LONGITUDE ALTITUDE\n"
         << "  provides the pointing target\n"
         << "\n"
-        << "stabilize\n"
-        << "  enable stabilization"
+        << "rate-pt RATE\n"
+        << "  set the positioner status rate. RATE is 0, 10, 20 and 50 in Hz\n"
+        << "\n"
+        << "rate-imu RATE\n"
+        << "  set the IMU status rate. RATE is 0, 10, 20 and 50 in Hz\n"
         << std::endl;
 }
 

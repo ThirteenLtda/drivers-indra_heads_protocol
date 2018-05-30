@@ -17,8 +17,9 @@ namespace indra_heads_protocol
             SELF_TEST,
             ANGLES_RELATIVE,
             ANGLES_GEO,
-            ANGULAR_VELOCITY,
-            STABILIZED
+            ANGULAR_VELOCITY_RELATIVE,
+            ANGULAR_VELOCITY_GEO,
+            POSITION_GEO
         };
 
         /** Time of last update */
@@ -56,4 +57,3 @@ namespace indra_heads_protocol
 }
 
 #endif
-

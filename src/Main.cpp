@@ -26,6 +26,15 @@ void commands()
         << "self-test\n"
         << "  perform a self-test\n"
         << "\n"
+        << "angles-rel ROLL PITCH YAW\n"
+        << "  provides the joint angles in the vehicle frame\n"
+        << "\n"
+        << "angles-geo ROLL PITCH YAW\n"
+        << "  provides the joint angles in the inertial frame\n"
+        << "\n"
+        << "angles-vel ROLL PITCH YAW\n"
+        << "  provides each joint velocities\n"
+        << "\n"
         << "target LATITUDE LONGITUDE ALTITUDE\n"
         << "  provides the pointing target\n"
         << "\n"
@@ -129,6 +138,17 @@ string ask(std::string prompt)
     return cmd;
 }
 
+Eigen::Vector3d askRPY()
+{
+    string roll_s  = ask("Roll  ?");
+    string pitch_s = ask("Pitch ?");
+    string yaw_s   = ask("Yaw  ?");
+    double roll  = stod(roll_s);
+    double pitch = stod(pitch_s);
+    double yaw   = stod(yaw_s);
+    return Eigen::Vector3d(roll, pitch, yaw);
+}
+
 void handleClient(int client_fd)
 {
     Driver driver;
@@ -155,6 +175,21 @@ void handleClient(int client_fd)
             Rates target_rate = rate_from_arg(rate);
             displayResponse(request(driver, requests::StatusRefreshRatePT(target_rate)));
         }
+        else if (cmd == "angles-geo") {
+            auto rpy = askRPY();
+            displayResponse(
+                request(driver, requests::AnglesGeo(rpy.x(), rpy.y(), rpy.z())));
+        }
+        else if (cmd == "angles-rel") {
+            auto rpy = askRPY();
+            displayResponse(
+                request(driver, requests::AnglesRelative(rpy.x(), rpy.y(), rpy.z())));
+        }
+        else if (cmd == "angles-vel") {
+            auto rpy = askRPY();
+            displayResponse(
+                request(driver, requests::AngularVelocities(rpy.x(), rpy.y(), rpy.z())));
+        }
         else if (cmd == "target") {
             string latitude_s  = ask("Lat  ?");
             string longitude_s = ask("Long ?");
@@ -162,7 +197,7 @@ void handleClient(int client_fd)
             double latitude  = stod(latitude_s);
             double longitude = stod(longitude_s);
             double altitude  = stod(altitude_s);
-            displayResponse(request(driver, requests::StabilizationTarget(latitude, longitude, altitude)));
+            displayResponse(request(driver, requests::PositionGeo(latitude, longitude, altitude)));
         }
         else if (cmd == "re" || cmd == "reconnect") {
             break;

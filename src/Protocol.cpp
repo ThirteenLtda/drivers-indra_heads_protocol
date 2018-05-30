@@ -30,7 +30,7 @@ int packets::getPacketSize(CommandIDs command_id, MessageTypes message_type)
         case ID_ENABLE_STABILIZATION:
             return sizeof(packets::EnableStabilization);
         case ID_STABILIZATION_TARGET:
-            return sizeof(packets::StabilizationTarget);
+            return sizeof(packets::PositionGeo);
         default:
             throw std::invalid_argument("getPacketSize called with an invalid CommandIDs");
     };
@@ -135,12 +135,16 @@ Eigen::Vector3d requests::decode(packets::AngularVelocities const& velocities)
             details::decode_angular_velocity(velocities.pitch),
             details::decode_angular_velocity(velocities.yaw));
 }
-GeoTarget requests::decode(packets::StabilizationTarget const& target)
+GeoTarget requests::decode(packets::PositionGeo const& target)
 {
     return GeoTarget(
             details::decode_latlon(target.latitude),
             details::decode_latlon(target.longitude),
             details::decode_altitude(target.altitude));
+}
+bool requests::decode(packets::EnableStabilization const& angle)
+{
+    return angle.roll && angle.pitch && angle.yaw;
 }
 
 ResponseStatus reply::parse(packets::Response const& message)

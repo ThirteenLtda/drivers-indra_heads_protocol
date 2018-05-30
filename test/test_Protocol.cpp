@@ -65,7 +65,7 @@ TEST(Protocol, EnableStabilization) {
 }
 
 TEST(Protocol, StabilizationTarget) {
-    vector<uint8_t> packet = requests::packetize(requests::StabilizationTarget(-0.1, 0.2, -0.3));
+    vector<uint8_t> packet = requests::packetize(requests::PositionGeo(-0.1, 0.2, -0.3));
     // ElementsAre supports 10 elements max
     ASSERT_THAT(vector<uint8_t>(packet.begin(), packet.begin() + 7),
             ElementsAre(0x08, 0x00,

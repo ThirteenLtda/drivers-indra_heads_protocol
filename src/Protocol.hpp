@@ -149,7 +149,7 @@ namespace indra_heads_protocol
                 , roll(roll ? 1 : 0) {}
         } __attribute__((packed));
 
-        struct StabilizationTarget
+        struct PositionGeo
         {
             uint8_t command_id = ID_STABILIZATION_TARGET;
             uint8_t message_type = MSG_REQUEST;
@@ -157,7 +157,7 @@ namespace indra_heads_protocol
             uint8_t longitude[5];
             uint8_t altitude[3];
 
-            StabilizationTarget(double latitude, double longitude, double altitude)
+            PositionGeo(double latitude, double longitude, double altitude)
             {
                 details::encode_latlon(this->latitude, latitude);
                 details::encode_latlon(this->longitude, longitude);
@@ -233,10 +233,10 @@ namespace indra_heads_protocol
             return packets::EnableStabilization(yaw, pitch, roll);
         }
 
-        inline packets::StabilizationTarget StabilizationTarget(
+        inline packets::PositionGeo PositionGeo(
             double latitude, double longitude, double altitude)
         {
-            return packets::StabilizationTarget(latitude, longitude, altitude);
+            return packets::PositionGeo(latitude, longitude, altitude);
         }
 
         template<typename T> void packetize(uint8_t* buffer, T const& packet) {
@@ -255,7 +255,8 @@ namespace indra_heads_protocol
         Rates decode(packets::StatusRefreshRate const& angle);
         Eigen::Vector3d decode(packets::Angles const& angle);
         Eigen::Vector3d decode(packets::AngularVelocities const& angle);
-        GeoTarget decode(packets::StabilizationTarget const& angle);
+        bool decode(packets::EnableStabilization const& angle);
+        GeoTarget decode(packets::PositionGeo const& angle);
     }
 
     /** Representation of the reply messages

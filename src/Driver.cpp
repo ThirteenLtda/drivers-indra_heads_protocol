@@ -84,15 +84,28 @@ CommandIDs Driver::readRequest()
             return ID_ANGLES_GEO;
         case ID_ANGULAR_VELOCITIES:
             mRequestedConfiguration.command_id = ID_ANGULAR_VELOCITIES;
-            mRequestedConfiguration.control_mode = RequestedConfiguration::ANGULAR_VELOCITY;
+            if (mStabilized) {
+                mRequestedConfiguration.control_mode =
+                    RequestedConfiguration::ANGULAR_VELOCITY_GEO;
+            }
+            else {
+                mRequestedConfiguration.control_mode =
+                    RequestedConfiguration::ANGULAR_VELOCITY_RELATIVE;
+            }
             mRequestedConfiguration.rpy =
                 requests::decode(reinterpret_cast<packets::AngularVelocities&>(mReadBuffer[0]));
             return ID_ANGULAR_VELOCITIES;
+        case ID_ENABLE_STABILIZATION:
+            mRequestedConfiguration.command_id = ID_ENABLE_STABILIZATION;
+            mStabilized = requests::decode(
+                reinterpret_cast<packets::EnableStabilization&>(mReadBuffer[0]));
+            return ID_ENABLE_STABILIZATION;
+
         case ID_STABILIZATION_TARGET:
             mRequestedConfiguration.command_id = ID_STABILIZATION_TARGET;
-            mRequestedConfiguration.control_mode = RequestedConfiguration::STABILIZED;
+            mRequestedConfiguration.control_mode = RequestedConfiguration::POSITION_GEO;
             mRequestedConfiguration.lat_lon_alt =
-                requests::decode(reinterpret_cast<packets::StabilizationTarget&>(mReadBuffer[0]));
+                requests::decode(reinterpret_cast<packets::PositionGeo&>(mReadBuffer[0]));
             return ID_STABILIZATION_TARGET;
         default:
             throw std::logic_error("should never have reached this");

@@ -25,7 +25,7 @@ int packets::getPacketSize(CommandIDs command_id, MessageTypes message_type)
             return sizeof(packets::Angles);
         case ID_ANGLES_GEO:
             return sizeof(packets::Angles);
-        case ID_ANGULAR_VELOCITIES:
+        case ID_ANGULAR_VELOCITY:
             return sizeof(packets::AngularVelocities);
         case ID_ENABLE_STABILIZATION:
             return sizeof(packets::EnableStabilization);

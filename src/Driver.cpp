@@ -82,8 +82,8 @@ CommandIDs Driver::readRequest()
             mRequestedConfiguration.rpy =
                 requests::decode(reinterpret_cast<packets::Angles&>(mReadBuffer[0]));
             return ID_ANGLES_GEO;
-        case ID_ANGULAR_VELOCITIES:
-            mRequestedConfiguration.command_id = ID_ANGULAR_VELOCITIES;
+        case ID_ANGULAR_VELOCITY:
+            mRequestedConfiguration.command_id = ID_ANGULAR_VELOCITY;
             if (mStabilized) {
                 mRequestedConfiguration.control_mode =
                     RequestedConfiguration::ANGULAR_VELOCITY_GEO;
@@ -94,7 +94,7 @@ CommandIDs Driver::readRequest()
             }
             mRequestedConfiguration.rpy =
                 requests::decode(reinterpret_cast<packets::AngularVelocities&>(mReadBuffer[0]));
-            return ID_ANGULAR_VELOCITIES;
+            return ID_ANGULAR_VELOCITY;
         case ID_ENABLE_STABILIZATION:
             mRequestedConfiguration.command_id = ID_ENABLE_STABILIZATION;
             mStabilized = requests::decode(

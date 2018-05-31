@@ -15,7 +15,7 @@ namespace indra_heads_protocol
         ID_STATUS_REFRESH_RATE_IMU = 3,
         ID_ANGLES_RELATIVE = 4,
         ID_ANGLES_GEO      = 5,
-        ID_ANGULAR_VELOCITIES = 6,
+        ID_ANGULAR_VELOCITY = 6,
         ID_ENABLE_STABILIZATION = 7,
         ID_STABILIZATION_TARGET = 8
     };
@@ -121,7 +121,7 @@ namespace indra_heads_protocol
 
         struct AngularVelocities
         {
-            uint8_t command_id = ID_ANGULAR_VELOCITIES;
+            uint8_t command_id = ID_ANGULAR_VELOCITY;
             uint8_t message_type = MSG_REQUEST;
             uint8_t yaw[2];
             uint8_t pitch[2];

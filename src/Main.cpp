@@ -26,14 +26,12 @@ void commands()
         << "self-test\n"
         << "  perform a self-test\n"
         << "\n"
-        << "angles-rel ROLL PITCH YAW\n"
-        << "  provides the joint angles in the vehicle frame\n"
+        << "enable-stabilization ENABLED\n"
         << "\n"
-        << "angles-geo ROLL PITCH YAW\n"
-        << "  provides the joint angles in the inertial frame\n"
-        << "\n"
+        << "angles-pos-geo ROLL PITCH YAW\n"
+        << "angles-pos-rel ROLL PITCH YAW\n"
         << "angles-vel ROLL PITCH YAW\n"
-        << "  provides each joint velocities\n"
+        << "  control modes\n"
         << "\n"
         << "target LATITUDE LONGITUDE ALTITUDE\n"
         << "  provides the pointing target\n"
@@ -175,12 +173,12 @@ void handleClient(int client_fd)
             Rates target_rate = rate_from_arg(rate);
             displayResponse(request(driver, requests::StatusRefreshRatePT(target_rate)));
         }
-        else if (cmd == "angles-geo") {
+        else if (cmd == "angles-pos-geo") {
             auto rpy = askRPY();
             displayResponse(
                 request(driver, requests::AnglesGeo(rpy.x(), rpy.y(), rpy.z())));
         }
-        else if (cmd == "angles-rel") {
+        else if (cmd == "angles-pos-rel") {
             auto rpy = askRPY();
             displayResponse(
                 request(driver, requests::AnglesRelative(rpy.x(), rpy.y(), rpy.z())));
@@ -189,6 +187,12 @@ void handleClient(int client_fd)
             auto rpy = askRPY();
             displayResponse(
                 request(driver, requests::AngularVelocities(rpy.x(), rpy.y(), rpy.z())));
+        }
+        else if (cmd == "enable-stabilization") {
+            string yesno = ask("Enable ?");
+            bool enabled = (yesno == "1");
+            displayResponse(
+                request(driver, requests::EnableStabilization(enabled, enabled, enabled)));
         }
         else if (cmd == "target") {
             string latitude_s  = ask("Lat  ?");

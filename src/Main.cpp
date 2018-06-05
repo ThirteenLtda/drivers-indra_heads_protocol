@@ -30,7 +30,8 @@ void commands()
         << "\n"
         << "angles-pos-geo ROLL PITCH YAW\n"
         << "angles-pos-rel ROLL PITCH YAW\n"
-        << "angles-vel ROLL PITCH YAW\n"
+        << "angles-vel-rel ROLL PITCH YAW\n"
+        << "angles-vel-geo ROLL PITCH YAW\n"
         << "  control modes\n"
         << "\n"
         << "target LATITUDE LONGITUDE ALTITUDE\n"
@@ -183,16 +184,15 @@ void handleClient(int client_fd)
             displayResponse(
                 request(driver, requests::AnglesRelative(rpy.x(), rpy.y(), rpy.z())));
         }
-        else if (cmd == "angles-vel") {
+        else if (cmd == "angles-vel-rel") {
             auto rpy = askRPY();
             displayResponse(
-                request(driver, requests::AngularVelocities(rpy.x(), rpy.y(), rpy.z())));
+                request(driver, requests::AngularVelocityRelative(rpy.x(), rpy.y(), rpy.z())));
         }
-        else if (cmd == "enable-stabilization") {
-            string yesno = ask("Enable ?");
-            bool enabled = (yesno == "1");
+        else if (cmd == "angles-vel-geo") {
+            auto rpy = askRPY();
             displayResponse(
-                request(driver, requests::EnableStabilization(enabled, enabled, enabled)));
+                request(driver, requests::AngularVelocityGeo(rpy.x(), rpy.y(), rpy.z())));
         }
         else if (cmd == "target") {
             string latitude_s  = ask("Lat  ?");

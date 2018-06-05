@@ -54,14 +54,14 @@ TEST(Protocol, AnglesGeo) {
             ElementsAre(0x05, 0x00, 0x00, 0xB, 0x00, 0x22, 0x00, 0x16, 0x17));
 }
 
-TEST(Protocol, AngularVelocities) {
-    ASSERT_THAT(requests::packetize(requests::AngularVelocities(0.1, -0.2, 0.3)),
+TEST(Protocol, AngularVelocityRelative) {
+    ASSERT_THAT(requests::packetize(requests::AngularVelocityRelative(0.1, -0.2, 0.3)),
             ElementsAre(0x06, 0x00, 0x0, 0x39, 0x1, 0x73, 0x0, 0xAC, 0xC6));
 }
 
-TEST(Protocol, EnableStabilization) {
-    ASSERT_THAT(requests::packetize(requests::EnableStabilization(true, true, true)),
-            ElementsAre(0x07, 0x00, 0x01, 0x01, 0x01, 0x50));
+TEST(Protocol, AngularVelocityGeo) {
+    ASSERT_THAT(requests::packetize(requests::AngularVelocityGeo(0.1, -0.2, 0.3)),
+            ElementsAre(0x07, 0x00, 0x0, 0x39, 0x1, 0x73, 0x0, 0xAC, 0xD5));
 }
 
 TEST(Protocol, StabilizationTarget) {

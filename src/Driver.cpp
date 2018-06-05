@@ -82,25 +82,20 @@ CommandIDs Driver::readRequest()
             mRequestedConfiguration.rpy =
                 requests::decode(reinterpret_cast<packets::Angles&>(mReadBuffer[0]));
             return ID_ANGLES_GEO;
-        case ID_ANGULAR_VELOCITY:
-            mRequestedConfiguration.command_id = ID_ANGULAR_VELOCITY;
-            if (mStabilized) {
-                mRequestedConfiguration.control_mode =
-                    RequestedConfiguration::ANGULAR_VELOCITY_GEO;
-            }
-            else {
-                mRequestedConfiguration.control_mode =
-                    RequestedConfiguration::ANGULAR_VELOCITY_RELATIVE;
-            }
+        case ID_ANGULAR_VELOCITY_RELATIVE:
+            mRequestedConfiguration.command_id = ID_ANGULAR_VELOCITY_RELATIVE;
+            mRequestedConfiguration.control_mode =
+                RequestedConfiguration::ANGULAR_VELOCITY_RELATIVE;
             mRequestedConfiguration.rpy =
                 requests::decode(reinterpret_cast<packets::AngularVelocities&>(mReadBuffer[0]));
-            return ID_ANGULAR_VELOCITY;
-        case ID_ENABLE_STABILIZATION:
-            mRequestedConfiguration.command_id = ID_ENABLE_STABILIZATION;
-            mStabilized = requests::decode(
-                reinterpret_cast<packets::EnableStabilization&>(mReadBuffer[0]));
-            return ID_ENABLE_STABILIZATION;
-
+            return ID_ANGULAR_VELOCITY_RELATIVE;
+        case ID_ANGULAR_VELOCITY_GEO:
+            mRequestedConfiguration.command_id = ID_ANGULAR_VELOCITY_GEO;
+            mRequestedConfiguration.control_mode =
+                RequestedConfiguration::ANGULAR_VELOCITY_GEO;
+            mRequestedConfiguration.rpy =
+                requests::decode(reinterpret_cast<packets::AngularVelocities&>(mReadBuffer[0]));
+            return ID_ANGULAR_VELOCITY_GEO;
         case ID_STABILIZATION_TARGET:
             mRequestedConfiguration.command_id = ID_STABILIZATION_TARGET;
             mRequestedConfiguration.control_mode = RequestedConfiguration::POSITION_GEO;

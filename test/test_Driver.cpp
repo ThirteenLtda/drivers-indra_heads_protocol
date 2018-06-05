@@ -141,23 +141,19 @@ TEST_F(DriverTest, it_interprets_a_ANGLES_GEO_command) {
     ASSERT_TRUE(Eigen::Vector3d(0.19199, 0.29671, 0.09599).isApprox(requestedConfiguration.rpy, 1e-4));
 }
 
-TEST_F(DriverTest, it_interprets_a_ANGULAR_VELOCITIES_command_as_GEO_by_default) {
+TEST_F(DriverTest, it_interprets_a_ANGULAR_VELOCITY_RELATIVE_command) {
     uint8_t msg[] = {0x06, 0x00, 0x00, 0x39, 0x01, 0x73, 0x00, 0xAC, 0xC6};
     pushDataToDriver(msg, msg + sizeof(msg));
-    ASSERT_EQ(ID_ANGULAR_VELOCITY, readRequest());
-    ASSERT_EQ(RequestedConfiguration::ANGULAR_VELOCITY_GEO, requestedConfiguration.control_mode);
+    ASSERT_EQ(ID_ANGULAR_VELOCITY_RELATIVE, readRequest());
+    ASSERT_EQ(RequestedConfiguration::ANGULAR_VELOCITY_RELATIVE, requestedConfiguration.control_mode);
     ASSERT_TRUE(Eigen::Vector3d(0.300197, -0.200713, 0.09948).isApprox(requestedConfiguration.rpy, 1e-4));
 }
 
-TEST_F(DriverTest, it_interprets_a_ANGULAR_VELOCITIES_command_as_RELATIVE_if_stabilization_is_disabled) {
-    { uint8_t msg[] = {0x07, 0x00, 0x00, 0x00, 0x00, 0x29};
-      pushDataToDriver(msg, msg + sizeof(msg));
-      ASSERT_EQ(ID_ENABLE_STABILIZATION, readRequest()); }
-
-    uint8_t msg[] = {0x06, 0x00, 0x00, 0x39, 0x01, 0x73, 0x00, 0xAC, 0xC6};
+TEST_F(DriverTest, it_interprets_a_ANGULAR_VELOCITY_GEO_command) {
+    uint8_t msg[] = {0x07, 0x00, 0x00, 0x39, 0x01, 0x73, 0x00, 0xAC, 0xD5};
     pushDataToDriver(msg, msg + sizeof(msg));
-    ASSERT_EQ(ID_ANGULAR_VELOCITY, readRequest());
-    ASSERT_EQ(RequestedConfiguration::ANGULAR_VELOCITY_RELATIVE,
+    ASSERT_EQ(ID_ANGULAR_VELOCITY_GEO, readRequest());
+    ASSERT_EQ(RequestedConfiguration::ANGULAR_VELOCITY_GEO,
         requestedConfiguration.control_mode);
     ASSERT_TRUE(Eigen::Vector3d(0.300197, -0.200713, 0.09948).
         isApprox(requestedConfiguration.rpy, 1e-4));

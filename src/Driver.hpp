@@ -15,7 +15,6 @@ namespace indra_heads_protocol
 
     protected:
         int extractPacket(uint8_t const* buffer, size_t buffer_size) const;
-        bool mStabilized = true;
 
     public:
         /** Exception thrown from the getters that allow to access the command

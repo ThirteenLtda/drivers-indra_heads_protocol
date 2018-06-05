@@ -15,8 +15,8 @@ namespace indra_heads_protocol
         ID_STATUS_REFRESH_RATE_IMU = 3,
         ID_ANGLES_RELATIVE = 4,
         ID_ANGLES_GEO      = 5,
-        ID_ANGULAR_VELOCITY = 6,
-        ID_ENABLE_STABILIZATION = 7,
+        ID_ANGULAR_VELOCITY_RELATIVE = 6,
+        ID_ANGULAR_VELOCITY_GEO = 7,
         ID_STABILIZATION_TARGET = 8
     };
 
@@ -121,32 +121,19 @@ namespace indra_heads_protocol
 
         struct AngularVelocities
         {
-            uint8_t command_id = ID_ANGULAR_VELOCITY;
+            uint8_t command_id;
             uint8_t message_type = MSG_REQUEST;
             uint8_t yaw[2];
             uint8_t pitch[2];
             uint8_t roll[2];
 
-            AngularVelocities(double yaw, double pitch, double roll)
+            AngularVelocities(CommandIDs command, double yaw, double pitch, double roll)
+                : command_id(command)
             {
                 details::encode_angular_velocity(this->yaw, yaw);
                 details::encode_angular_velocity(this->pitch, pitch);
                 details::encode_angular_velocity(this->roll, roll);
             }
-        } __attribute__((packed));
-
-        struct EnableStabilization
-        {
-            uint8_t command_id = ID_ENABLE_STABILIZATION;
-            uint8_t message_type = MSG_REQUEST;
-            uint8_t yaw;
-            uint8_t pitch;
-            uint8_t roll;
-
-            EnableStabilization(bool yaw, bool pitch, bool roll)
-                : yaw(yaw ? 1 : 0)
-                , pitch(pitch ? 1 : 0)
-                , roll(roll ? 1 : 0) {}
         } __attribute__((packed));
 
         struct PositionGeo
@@ -221,16 +208,16 @@ namespace indra_heads_protocol
             return packets::Angles(ID_ANGLES_GEO, yaw, pitch, roll);
         }
 
-        inline packets::AngularVelocities AngularVelocities(
+        inline packets::AngularVelocities AngularVelocityRelative(
             double yaw, double pitch, double roll)
         {
-            return packets::AngularVelocities(yaw, pitch, roll);
+            return packets::AngularVelocities(ID_ANGULAR_VELOCITY_RELATIVE, yaw, pitch, roll);
         }
 
-        inline packets::EnableStabilization EnableStabilization(
-            bool yaw, bool pitch, bool roll)
+        inline packets::AngularVelocities AngularVelocityGeo(
+            double yaw, double pitch, double roll)
         {
-            return packets::EnableStabilization(yaw, pitch, roll);
+            return packets::AngularVelocities(ID_ANGULAR_VELOCITY_GEO, yaw, pitch, roll);
         }
 
         inline packets::PositionGeo PositionGeo(
@@ -255,7 +242,6 @@ namespace indra_heads_protocol
         Rates decode(packets::StatusRefreshRate const& angle);
         Eigen::Vector3d decode(packets::Angles const& angle);
         Eigen::Vector3d decode(packets::AngularVelocities const& angle);
-        bool decode(packets::EnableStabilization const& angle);
         GeoTarget decode(packets::PositionGeo const& angle);
     }
 

@@ -22,13 +22,11 @@ int packets::getPacketSize(CommandIDs command_id, MessageTypes message_type)
         case ID_STATUS_REFRESH_RATE_IMU:
             return sizeof(packets::StatusRefreshRate);
         case ID_ANGLES_RELATIVE:
-            return sizeof(packets::Angles);
         case ID_ANGLES_GEO:
             return sizeof(packets::Angles);
-        case ID_ANGULAR_VELOCITY:
+        case ID_ANGULAR_VELOCITY_RELATIVE:
+        case ID_ANGULAR_VELOCITY_GEO:
             return sizeof(packets::AngularVelocities);
-        case ID_ENABLE_STABILIZATION:
-            return sizeof(packets::EnableStabilization);
         case ID_STABILIZATION_TARGET:
             return sizeof(packets::PositionGeo);
         default:
@@ -142,11 +140,6 @@ GeoTarget requests::decode(packets::PositionGeo const& target)
             details::decode_latlon(target.longitude),
             details::decode_altitude(target.altitude));
 }
-bool requests::decode(packets::EnableStabilization const& angle)
-{
-    return angle.roll && angle.pitch && angle.yaw;
-}
-
 ResponseStatus reply::parse(packets::Response const& message)
 {
     return static_cast<ResponseStatus>(message.status);

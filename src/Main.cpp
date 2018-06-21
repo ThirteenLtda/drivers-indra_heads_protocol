@@ -214,7 +214,17 @@ void handleClient(int client_fd)
 
 int main(int argc, char** argv)
 {
-    verify_argc_atleast(2, argc);
+    if (argc > 1 && string(argv[1]) == "--help")
+    {
+        usage();
+        return 0;
+    }
+
+    int port = 17001;
+    if (argc > 1)
+    {
+        port = std::stol(argv[1]);
+    }
 
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     int enable = 1;
@@ -224,7 +234,7 @@ int main(int argc, char** argv)
         std::cerr << strerror(errno) << std::endl;
         return 1;
     }
-    sockaddr_in server_addr = getipa("0.0.0.0", std::stol(argv[1]));
+    sockaddr_in server_addr = getipa("0.0.0.0", port);
     int result = bind(server_fd, (sockaddr*)&server_addr, sizeof(server_addr));
     if (result < 0)
     {

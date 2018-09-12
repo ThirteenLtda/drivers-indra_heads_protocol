@@ -5,6 +5,7 @@
 #include <Eigen/Core>
 #include <arpa/inet.h>
 #include <base/Float.hpp>
+#include <vector>
 
 namespace indra_heads_protocol
 {

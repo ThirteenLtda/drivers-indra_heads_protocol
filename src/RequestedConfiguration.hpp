@@ -49,7 +49,7 @@ namespace indra_heads_protocol
         GeoTarget lat_lon_alt;
 
         RequestedConfiguration()
-            : rate_status_pt(RATE_DISABLED)
+            : rate_status_pt(RATE_10HZ)
             , rate_status_imu(RATE_DISABLED)
             , control_mode(STOP)
             , rpy(base::unset<base::Vector3d>()) {}

@@ -59,7 +59,11 @@ double details::decode_angle(uint8_t const* angle)
     uint16_t integral =
         static_cast<uint16_t>(angle[0]) << 8 |
         static_cast<uint16_t>(angle[1]) << 0;
-    return static_cast<double>(integral) / 360 * M_PI;
+    double positive = static_cast<double>(integral) / 360 * M_PI;
+    if (positive > M_PI)
+        return positive - 2 * M_PI;
+    else
+        return positive;
 }
 
 void details::encode_angular_velocity(uint8_t* encoded, double velocity)
